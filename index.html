@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Apeiron AI — Fast Company Finder</title>
+<style>
+:root{--bg:#f4f7fb;--panel:#fff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--dark:#0f172a;--blue:#2563eb;--green:#087f5b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}.side{background:#0f172a;color:#fff;padding:24px 18px}
+.brand{font-size:21px;font-weight:800;margin-bottom:28px}.nav{padding:10px 12px;border-radius:10px;background:#1e293b;font-size:14px}
+.main{padding:28px 32px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+h1{margin:0;font-size:29px;letter-spacing:-.7px}.ver{font-size:12px;padding:7px 10px;background:#e8eef7;border-radius:999px;color:#475569;font-weight:700}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(15,23,42,.05);margin-bottom:18px}
+.sub{color:var(--muted);font-size:14px;line-height:1.5;margin-top:7px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c12{grid-column:span 12}
+label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d7dee8;border-radius:10px;background:#fff;font-size:14px}
+textarea{min-height:70px}.segments{display:flex;gap:8px;flex-wrap:wrap}.seg input{display:none}.seg span{display:inline-block;padding:7px 10px;border:1px solid #d7dee8;border-radius:999px;font-size:12px;cursor:pointer}
+.seg input:checked+span{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;font-weight:700}
+.actions{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid #eef2f6}
+.note{font-size:12px;color:var(--muted)}button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer}
+.primary{background:#0f172a;color:#fff}.secondary{background:#fff;border:1px solid #d7dee8;color:#111827}.status{display:none;padding:12px 14px;border-radius:10px;background:#f8fafc;border:1px solid var(--line);font-size:13px;margin-bottom:14px}.error{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
+.results-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.results-head h2{font-size:18px;margin:0}
+.company{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;gap:18px}.name{font-size:17px;font-weight:800}.meta{font-size:12px;color:var(--muted);margin-top:4px}
+.fit{display:inline-block;margin-left:7px;background:#0f172a;color:#fff;padding:4px 7px;border-radius:999px;font-size:10px}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.pill{font-size:10.5px;background:#f1f5f9;border-radius:999px;padding:4px 7px}.high{background:#e8f7f0;color:#087f5b}
+.why{font-size:13px;color:#334155;line-height:1.45;margin-top:10px}.enrich{display:none;margin-top:14px;padding-top:14px;border-top:1px solid #edf2f7}
+.kv{display:grid;grid-template-columns:155px 1fr;gap:7px 10px;font-size:12px}.k{color:var(--muted)}.v{font-weight:600}.sources a{display:block;color:#2563eb;font-size:11.5px;margin-top:5px}
+.contact{font-size:12px;margin-top:8px;padding-top:8px;border-top:1px solid #edf2f7}.small{font-size:11px;color:var(--muted)}
+@media(max-width:900px){.app{grid-template-columns:1fr}.side{display:none}.main{padding:18px 14px}.c3,.c4{grid-column:span 12}.row{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side"><div class="brand">Apeiron AI</div><div class="nav">⚡ Fast Company Finder</div></aside>
+<main class="main">
+<div class="top"><div><h1>Find companies that fit Apeiron</h1><div class="sub">Prima scopriamo velocemente i prospect. L’analisi approfondita parte solo quando ti interessa una società.</div></div><div class="ver">FAST SEARCH V9.1</div></div>
+
+<section class="card">
+<div id="status" class="status"></div>
+<div class="grid">
+<div class="c4"><label>Paese / regione</label><input id="region" value="Europe"></div>
+<div class="c4"><label>Area terapeutica</label><input id="therapeuticArea" placeholder="Opzionale"></div>
+<div class="c4"><label>Similarity mode</label><select id="mode"><option value="broad" selected>Broad — business model first</option><option value="strict">Strict</option><option value="portfolio">Portfolio-first</option></select></div>
+<div class="c3"><label>Fatturato minimo (€)</label><input id="revenueMin" type="number" placeholder="Opzionale"></div>
+<div class="c3"><label>Fatturato massimo (€)</label><input id="revenueMax" type="number" placeholder="Opzionale"></div>
+<div class="c3"><label>Numero risultati</label><select id="limit"><option>10</option><option selected>20</option><option>30</option><option>50</option></select></div>
+<div class="c12"><label>Settori</label><div class="segments">
+<label class="seg"><input class="segmentInput" type="checkbox" value="Generics" checked><span>Generici</span></label>
+<label class="seg"><input class="segmentInput" type="checkbox" value="Medical Devices" checked><span>Dispositivi medici</span></label>
+<label class="seg"><input class="segmentInput" type="checkbox" value="Food Supplements" checked><span>Integratori</span></label>
+<label class="seg"><input class="segmentInput" type="checkbox" value="OTC" checked><span>OTC</span></label>
+<label class="seg"><input class="segmentInput" type="checkbox" value="Rx" checked><span>Rx</span></label>
+</div></div>
+<div class="c12"><label>Escludi</label><textarea id="exclude">Puri grossisti senza portfolio proprio, farmacie, ospedali, CRO, API-only traders, aziende senza attività commerciale rilevante.</textarea></div>
+</div>
+<div class="actions"><div class="note">Fast Search restituisce prima una shortlist leggera; approfondisci solo le aziende interessanti.</div><button id="searchBtn" class="primary" onclick="runSearch()">Find companies</button></div>
+</section>
+<div id="results"></div>
+</main></div>
+
+<script>
+const cacheKey="apeiron_fast_cache_v9";
+const cache=JSON.parse(localStorage.getItem(cacheKey)||"{}");
+let currentCompanies=[];
+let lastPayload=null;
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+function segs(){return [...document.querySelectorAll(".segmentInput:checked")].map(x=>x.value)}
+function setStatus(msg,err=false){const e=document.getElementById("status");e.style.display="block";e.className="status"+(err?" error":"");e.textContent=msg}
+function clearStatus(){document.getElementById("status").style.display="none"}
+
+async function runSearch(){
+  const btn=document.getElementById("searchBtn");btn.disabled=true;
+  const payload={region:region.value,therapeuticArea:therapeuticArea.value,revenueMin:revenueMin.value||null,revenueMax:revenueMax.value||null,segments:segs(),mode:mode.value,limit:Number(limit.value),exclude:exclude.value};
+  const key=JSON.stringify(payload);
+  if(cache[key]){
+    currentCompanies=cache[key].companies||[];
+    lastPayload=payload;
+    clearStatus();render(currentCompanies,cache[key].meta,true);btn.disabled=false;return
+  }
+  setStatus("Fast discovery in corso…");
+  results.innerHTML="";
+  try{
+    const r=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const raw=await r.text();let data;
+    try{data=JSON.parse(raw)}catch{throw new Error(`Server error HTTP ${r.status}: ${raw.slice(0,220)}`)}
+    if(!r.ok) throw new Error(data.error||"Search failed");
+    cache[key]=data;localStorage.setItem(cacheKey,JSON.stringify(cache));
+    currentCompanies=data.companies||[];
+    lastPayload=payload;
+    clearStatus();render(currentCompanies,data.meta||{},false);
+  }catch(e){setStatus(e.message,true)}finally{btn.disabled=false}
+}
+
+function render(cs,meta,fromCache){
+  if(!cs.length){results.innerHTML='<div class="card">Nessun risultato trovato.</div>';return}
+  results.innerHTML=`<div class="results-head">
+    <h2>${cs.length} companies found</h2>
+    <div><span class="small">${fromCache?"cached result":"fast discovery"}</span>
+    <button class="secondary" style="margin-left:8px" onclick="findMore()">Find 20 more</button></div>
+  </div>`+cs.map((c,i)=>card(c,i)).join("");
+}
+
+async function findMore(){
+  if(!lastPayload){
+    setStatus("Run a search first.",true);return;
+  }
+  const existingNames=currentCompanies.map(c=>c.name).filter(Boolean);
+  const payload={...lastPayload,limit:20,excludeNames:existingNames};
+  setStatus("Finding more companies without duplicates…");
+  try{
+    const r=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const raw=await r.text();let data;
+    try{data=JSON.parse(raw)}catch{throw new Error(`Server error HTTP ${r.status}: ${raw.slice(0,220)}`)}
+    if(!r.ok) throw new Error(data.error||"Search failed");
+
+    const map=new Map();
+    for(const c of [...currentCompanies,...(data.companies||[])]){
+      const key=(c.domain||c.website||c.name||"").toLowerCase();
+      if(key && !map.has(key)) map.set(key,c);
+    }
+    currentCompanies=[...map.values()].sort((a,b)=>(b.apeiron_fit_score||0)-(a.apeiron_fit_score||0));
+    clearStatus();
+    render(currentCompanies,{mode:"incremental discovery"},false);
+  }catch(e){setStatus(e.message,true)}
+}
+
+function card(c,i){
+  const pills=[c.similarity,...(c.segments||[])].filter(Boolean).map((x,j)=>`<span class="pill ${j===0&&x==="High"?"high":""}">${esc(x)}</span>`).join("");
+  return `<div class="company">
+  <div class="row"><div><div class="name">${esc(c.name)} <span class="fit">${esc(c.apeiron_fit_score)}/100</span></div><div class="meta">${esc(c.country)} · ${esc(c.business_model_profile)}</div><div class="pills">${pills}</div></div>
+  <div><button class="secondary" onclick="enrich(${i},'${esc(c.name)}','${esc(c.domain)}','${esc(c.country)}')">Analyze company</button> <button class="secondary" onclick="contacts(${i},'${esc(c.domain)}')">Decision makers</button></div></div>
+  <div class="why">${esc(c.why_relevant)}</div>
+  <div class="small" style="margin-top:6px">${c.source_url?`<a href="${esc(c.source_url)}" target="_blank" rel="noopener">Quick source</a>`:""}</div>
+  <div id="enrich_${i}" class="enrich"></div>
+  <div id="contacts_${i}" class="enrich"></div>
+  </div>`;
+}
+
+async function enrich(i,name,domain,country){
+  const el=document.getElementById("enrich_"+i);el.style.display="block";el.innerHTML="Analyzing company…";
+  try{
+    const r=await fetch("/api/enrich",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,domain,country})});
+    const data=await r.json();if(!r.ok)throw new Error(data.error||"Analysis failed");
+    const src=(data.sources||[]).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join("");
+    el.innerHTML=`<div class="kv">
+      <div class="k">Revenue</div><div class="v">${esc(data.revenue_estimate)}</div>
+      <div class="k">Company type</div><div class="v">${esc(data.company_type)}</div>
+      <div class="k">Own brands</div><div class="v">${esc(data.own_brand_evidence)}</div>
+      <div class="k">Licensing / sourcing</div><div class="v">${esc(data.licensing_sourcing_evidence)}</div>
+      <div class="k">Portfolio expansion</div><div class="v">${esc(data.portfolio_expansion_evidence)}</div>
+      <div class="k">Commercial reach</div><div class="v">${esc(data.commercial_reach_evidence)}</div>
+      <div class="k">Therapeutic areas</div><div class="v">${esc((data.therapeutic_areas||[]).join(", "))}</div>
+      <div class="k">Assessment</div><div class="v">${esc(data.why_relevant)}</div>
+    </div><div class="sources" style="margin-top:10px">${src}</div>`;
+  }catch(e){el.innerHTML='<div class="small">'+esc(e.message)+'</div>'}
+}
+
+async function contacts(i,domain){
+  const el=document.getElementById("contacts_"+i);el.style.display="block";el.innerHTML="Searching business contacts…";
+  try{
+    const r=await fetch("/api/contacts?domain="+encodeURIComponent(domain));const data=await r.json();
+    if(!r.ok)throw new Error(data.error||"Contact search failed");
+    const p=data.contacts||[],f=data.fallback||[];
+    let h=p.map(x=>`<div class="contact"><b>${esc([x.first_name,x.last_name].filter(Boolean).join(" ")||x.email)}</b> — ${esc(x.position||"")}<br><a href="mailto:${esc(x.email)}">${esc(x.email)}</a> · confidence ${esc(x.confidence??"n/a")}</div>`).join("");
+    h+=f.map(x=>`<div class="contact">Fallback: <a href="mailto:${esc(x.email)}">${esc(x.email)}</a></div>`).join("");
+    el.innerHTML=h||'<div class="small">No suitable email found.</div>';
+  }catch(e){el.innerHTML='<div class="small">'+esc(e.message)+'</div>'}
+}
+</script>
+</body></html>
