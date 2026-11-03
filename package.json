@@ -4,6 +4,6 @@
   "private": true,
   "description": "Apeiron AI pharma business-development lead finder",
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   }
 }
