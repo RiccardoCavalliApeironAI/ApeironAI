@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Apeiron AI — Reference Finder</title>
+<style>
+:root{--bg:#f5f7fb;--panel:#fff;--dark:#101827;--line:#e4e8ef;--muted:#697386;--blue:#2563eb;--green:#087f5b;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#111827}
+.app{display:grid;grid-template-columns:235px 1fr;min-height:100vh}.side{background:var(--dark);color:white;padding:24px 18px}.brand{font-size:21px;font-weight:800;margin-bottom:28px}
+.nav{padding:10px 12px;border-radius:10px;background:#1f2937;font-size:14px}.side-note{margin-top:26px;font-size:12px;color:#aab4c3;line-height:1.5}
+.main{padding:28px 32px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+h1{font-size:29px;letter-spacing:-.6px;margin:0}.sub{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.5}.ver{font-size:12px;background:#eaf0f8;border-radius:999px;padding:7px 10px;color:#475569;font-weight:700}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(15,23,42,.05);margin-bottom:18px}
+.search{display:grid;grid-template-columns:1fr 180px auto;gap:12px;align-items:end}.field label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px}
+input,select{width:100%;padding:12px;border:1px solid #d6dde7;border-radius:10px;font-size:14px;background:#fff}
+button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer}.primary{background:#111827;color:#fff}.secondary{background:#fff;border:1px solid #d6dde7;color:#111827}
+.status{display:none;margin-bottom:14px;padding:12px 14px;border-radius:10px;background:#f8fafc;border:1px solid var(--line);font-size:13px}.error{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
+.reference{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}.chip{font-size:11px;padding:5px 8px;border-radius:999px;background:#f1f5f9;color:#475569}
+.headrow{display:flex;justify-content:space-between;align-items:center;margin:20px 2px 10px}.headrow h2{font-size:18px;margin:0}.small{font-size:11px;color:var(--muted)}
+.company{background:white;border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:10px}.row{display:flex;justify-content:space-between;gap:16px}.name{font-size:17px;font-weight:800}.fit{display:inline-block;margin-left:7px;background:#111827;color:#fff;padding:4px 7px;border-radius:999px;font-size:10px}.meta{font-size:12px;color:var(--muted);margin-top:4px}.sim{font-size:11px;color:#475569;margin-top:7px}
+.why{font-size:13px;line-height:1.45;color:#334155;margin-top:10px}.evidence{font-size:11.5px;color:var(--muted);margin-top:6px}.actions{display:flex;gap:6px;flex-wrap:wrap}.vote{padding:8px 10px}.good.active{background:#e8f7f0;color:var(--green);border-color:#b7ead8}.bad.active{background:#fff0ee;color:var(--red);border-color:#ffd2cc}
+.detail{display:none;margin-top:14px;padding-top:14px;border-top:1px solid #edf1f5}.kv{display:grid;grid-template-columns:165px 1fr;gap:7px 10px;font-size:12px}.k{color:var(--muted)}.v{font-weight:600}.sources a{display:block;color:var(--blue);font-size:11.5px;margin-top:5px}.contact{padding:8px 0;border-top:1px solid #edf1f5;font-size:12px}
+@media(max-width:850px){.app{grid-template-columns:1fr}.side{display:none}.main{padding:18px 14px}.search{grid-template-columns:1fr}.row{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand">Apeiron AI</div>
+  <div class="nav">Reference Company Finder</div>
+  <div class="side-note">Discovery first.<br>Business-model ranking second.<br>Deep analysis only on demand.</div>
+</aside>
+<main class="main">
+  <div class="top">
+    <div><h1>Find me companies like these</h1><div class="sub">La ricerca parte dalle aziende che consideri buoni prospect. Regione e numero risultati sono gli unici filtri iniziali.</div></div>
+    <div class="ver">REFERENCE-FIRST V10</div>
+  </div>
+
+  <section class="card">
+    <div id="status" class="status"></div>
+    <div class="search">
+      <div class="field"><label>Paese / regione</label><input id="region" value="Europe" placeholder="Es. Spain, Poland, Nordics, Europe"></div>
+      <div class="field"><label>Numero risultati</label><select id="limit"><option>20</option><option selected>30</option><option>50</option></select></div>
+      <button id="searchBtn" class="primary" onclick="runSearch()">Find similar companies</button>
+    </div>
+    <div class="reference" id="referenceChips"></div>
+  </section>
+
+  <div id="results"></div>
+</main>
+</div>
+
+<script>
+const references=[
+"Goodwill Pharma","Fertilland","Kern Pharma","Noscat GmbH","Cinfa","Horus Pharma","Brill Pharma",
+"Menarini","Polpharma","STADA","Bluepharma","SEID Lab","Dr. Reddy's","Levante Farma","ESTEVE",
+"Evolan","Orifarm","Orus Pharma","Exeltis","Aboutmeds","Pharmaidea","Aurovitas","Farmasyn S.A.",
+"Frezy Derm","Neo Health OTC","PRO.MED.CS Praha"
+];
+referenceChips.innerHTML=references.map(x=>`<span class="chip">${x}</span>`).join("");
+
+const feedback=JSON.parse(localStorage.getItem("apeiron_feedback_v10")||'{"liked":[],"disliked":[]}');
+let currentCompanies=[];
+let lastPayload=null;
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+function setStatus(msg,err=false){status.style.display="block";status.className="status"+(err?" error":"");status.textContent=msg}
+function clearStatus(){status.style.display="none"}
+
+async function runSearch(excludeNames=[]){
+  const btn=document.getElementById("searchBtn");btn.disabled=true;
+  const payload={
+    region:document.getElementById("region").value,
+    limit:Number(document.getElementById("limit").value),
+    likedCompanies:feedback.liked,
+    dislikedCompanies:feedback.disliked,
+    excludeNames
+  };
+  lastPayload=payload;setStatus("Searching by reference-company business models…");
+  try{
+    const r=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const raw=await r.text();let data;
+    try{data=JSON.parse(raw)}catch{throw new Error(`Server error HTTP ${r.status}: ${raw.slice(0,220)}`)}
+    if(!r.ok)throw new Error(data.error||"Search failed");
+    currentCompanies=data.companies||[];
+    clearStatus();render(currentCompanies,data.meta||{});
+  }catch(e){setStatus(e.message,true)}finally{btn.disabled=false}
+}
+
+function render(cs,meta){
+  if(!cs.length){results.innerHTML='<div class="card">No supported companies found.</div>';return}
+  results.innerHTML=`<div class="headrow"><h2>${cs.length} companies found</h2><div><span class="small">${esc(meta.approach||"reference-first")}</span> <button class="secondary" onclick="findMore()">Find 20 more</button></div></div>`+cs.map((c,i)=>card(c,i)).join("");
+}
+function card(c,i){
+  const good=feedback.liked.includes(c.name),bad=feedback.disliked.includes(c.name);
+  return `<div class="company">
+    <div class="row">
+      <div>
+        <div class="name">${esc(c.name)} <span class="fit">${esc(c.fit_score)}/100</span></div>
+        <div class="meta">${esc(c.country)} · ${esc(c.business_model_profile)}</div>
+        <div class="sim">Similar to: ${esc((c.similar_to||[]).join(", "))}</div>
+      </div>
+      <div class="actions">
+        <button class="secondary" onclick="analyze(${i},'${esc(c.name)}','${esc(c.domain)}','${esc(c.country)}')">Analyze</button>
+        <button class="secondary" onclick="contacts(${i},'${esc(c.domain)}')">Decision makers</button>
+        <button class="secondary vote good ${good?"active":""}" onclick="vote('${esc(c.name)}','good',this)">👍</button>
+        <button class="secondary vote bad ${bad?"active":""}" onclick="vote('${esc(c.name)}','bad',this)">👎</button>
+      </div>
+    </div>
+    <div class="why">${esc(c.why_relevant)}</div>
+    <div class="evidence">${esc(c.evidence_snippet)} ${c.source_url?`· <a href="${esc(c.source_url)}" target="_blank" rel="noopener">source</a>`:""}</div>
+    <div id="detail_${i}" class="detail"></div>
+    <div id="contacts_${i}" class="detail"></div>
+  </div>`;
+}
+
+function vote(name,type,btn){
+  feedback.liked=feedback.liked.filter(x=>x!==name);
+  feedback.disliked=feedback.disliked.filter(x=>x!==name);
+  if(type==="good")feedback.liked.push(name); else feedback.disliked.push(name);
+  localStorage.setItem("apeiron_feedback_v10",JSON.stringify(feedback));
+  render(currentCompanies,{approach:"feedback saved for next search"});
+}
+
+async function findMore(){
+  const existing=currentCompanies.map(x=>x.name);
+  setStatus("Finding additional companies without duplicates…");
+  const payload={...(lastPayload||{}),limit:20,excludeNames:existing,likedCompanies:feedback.liked,dislikedCompanies:feedback.disliked};
+  try{
+    const r=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const raw=await r.text();let data;try{data=JSON.parse(raw)}catch{throw new Error(`Server error HTTP ${r.status}: ${raw.slice(0,220)}`)}
+    if(!r.ok)throw new Error(data.error||"Search failed");
+    const map=new Map();
+    for(const c of [...currentCompanies,...(data.companies||[])]){const k=(c.domain||c.website||c.name).toLowerCase();if(!map.has(k))map.set(k,c)}
+    currentCompanies=[...map.values()].sort((a,b)=>(b.fit_score||0)-(a.fit_score||0));
+    clearStatus();render(currentCompanies,{approach:"incremental reference-first discovery"});
+  }catch(e){setStatus(e.message,true)}
+}
+
+async function analyze(i,name,domain,country){
+  const el=document.getElementById("detail_"+i);el.style.display="block";el.innerHTML="Analyzing…";
+  try{
+    const r=await fetch("/api/enrich",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,domain,country})});
+    const data=await r.json();if(!r.ok)throw new Error(data.error||"Analysis failed");
+    const src=(data.sources||[]).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join("");
+    el.innerHTML=`<div class="kv">
+      <div class="k">Revenue</div><div class="v">${esc(data.revenue_estimate)}</div>
+      <div class="k">Company type</div><div class="v">${esc(data.company_type)}</div>
+      <div class="k">Own brands</div><div class="v">${esc(data.own_brand_evidence)}</div>
+      <div class="k">Licensing / sourcing</div><div class="v">${esc(data.licensing_sourcing_evidence)}</div>
+      <div class="k">Portfolio expansion</div><div class="v">${esc(data.portfolio_expansion_evidence)}</div>
+      <div class="k">Commercial reach</div><div class="v">${esc(data.commercial_reach_evidence)}</div>
+      <div class="k">Segments</div><div class="v">${esc((data.relevant_segments||[]).join(", "))}</div>
+      <div class="k">Assessment</div><div class="v">${esc(data.why_relevant)}</div>
+    </div><div class="sources" style="margin-top:10px">${src}</div>`;
+  }catch(e){el.innerHTML='<div class="small">'+esc(e.message)+'</div>'}
+}
+
+async function contacts(i,domain){
+  const el=document.getElementById("contacts_"+i);el.style.display="block";el.innerHTML="Searching business contacts…";
+  try{
+    const r=await fetch("/api/contacts?domain="+encodeURIComponent(domain));const data=await r.json();
+    if(!r.ok)throw new Error(data.error||"Contact search failed");
+    const p=data.contacts||[],f=data.fallback||[];
+    let h=p.map(x=>`<div class="contact"><b>${esc([x.first_name,x.last_name].filter(Boolean).join(" ")||x.email)}</b> — ${esc(x.position||"")}<br><a href="mailto:${esc(x.email)}">${esc(x.email)}</a> · confidence ${esc(x.confidence??"n/a")}</div>`).join("");
+    h+=f.map(x=>`<div class="contact">Fallback: <a href="mailto:${esc(x.email)}">${esc(x.email)}</a></div>`).join("");
+    el.innerHTML=h||'<div class="small">No suitable email found.</div>';
+  }catch(e){el.innerHTML='<div class="small">'+esc(e.message)+'</div>'}
+}
+</script>
+</body>
+</html>
