@@ -1,0 +1,9 @@
+{
+  "name": "apeiron-ai-similar-company-finder",
+  "version": "0.8.1",
+  "private": true,
+  "description": "Apeiron AI pharma business-development lead finder",
+  "engines": {
+    "node": "20.x"
+  }
+}
