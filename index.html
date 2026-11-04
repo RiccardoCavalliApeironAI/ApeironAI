@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Apeiron AI — Similar Company Finder</title>
+  <style>
+    *{box-sizing:border-box} body{margin:0;background:#f4f6f8;color:#111;font-family:Arial,sans-serif}
+    .wrap{max-width:1180px;margin:34px auto;padding:0 20px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .brand{font-size:30px;font-weight:700}.badge{font-size:13px;background:#111;color:#fff;border-radius:999px;padding:8px 12px}
+    .card{background:#fff;border:1px solid #e1e5e9;border-radius:18px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,.04);margin-bottom:18px}
+    h1{font-size:31px;margin:0 0 8px} h2{font-size:21px;margin:0 0 14px} h3{font-size:17px;margin:0 0 10px}
+    p{color:#666;line-height:1.45}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.full{grid-column:1/-1}
+    label{display:block;font-size:13px;font-weight:700;color:#444;margin-bottom:7px}
+    input,select,textarea{width:100%;padding:12px;border:1px solid #cfd5dc;border-radius:10px;font-size:15px;background:#fff}
+    textarea{min-height:82px;resize:vertical}.checks{display:flex;flex-wrap:wrap;gap:9px;padding:11px;border:1px solid #cfd5dc;border-radius:10px}
+    .check{display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #e3e6ea;border-radius:999px;font-size:14px}
+    .check input{width:auto;margin:0} button{padding:12px 17px;border:0;border-radius:10px;background:#111;color:#fff;font-weight:700;font-size:14px;cursor:pointer}
+    button.secondary{background:#fff;color:#111;border:1px solid #d8dde3}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+    .statusbar{display:none;margin-top:18px;padding:13px;border-radius:10px;background:#f0f2f4;color:#555}
+    .company{border:1px solid #e2e6ea;border-radius:14px;padding:18px;margin-top:14px;background:#fff}
+    .company-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.company-name{font-size:20px;font-weight:700}
+    .meta{color:#68707a;font-size:13px;margin-top:4px}.pills{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0}
+    .pill{display:inline-block;padding:5px 8px;border-radius:999px;font-size:12px;background:#eef1f4}.high{background:#e6f5eb}.medium{background:#fff3d6}.low{background:#f1f2f4}
+    .company-body{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:15px}.panel{border:1px solid #edf0f2;border-radius:12px;padding:14px}
+    .kv{display:grid;grid-template-columns:145px 1fr;gap:7px 12px;font-size:14px}.k{color:#6b7280}.v{font-weight:600}
+    .sources a{display:block;margin:6px 0;color:#334;text-decoration:none;word-break:break-all}.sources a:hover{text-decoration:underline}
+    .contact{border-top:1px solid #eef1f3;padding-top:12px;margin-top:12px}.contact:first-child{border-top:0;padding-top:0;margin-top:0}
+    .contact-name{font-weight:700}.contact-role{font-size:13px;color:#646b73;margin:3px 0 7px}.small{font-size:12px;color:#70767d}
+    .contact-status{font-size:11px;border-radius:999px;padding:4px 7px;background:#eaf0ff;margin-left:6px}
+    .empty{font-size:13px;color:#777}.saved{background:#e6f5eb!important}.error{background:#fdecec!important;color:#8b1e1e!important}
+    @media(max-width:800px){.grid,.company-body{grid-template-columns:1fr}.full{grid-column:auto}.company-head{flex-direction:column}.kv{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="brand">Apeiron AI</div><div class="badge">LIVE SEARCH V5</div></div>
+
+  <div class="card">
+    <h1>Find me more companies like these</h1>
+    <p>Ricerca aziende reali simili al reference set Apeiron. Le informazioni vengono cercate sul web; le email professionali vengono richieste separatamente a Hunter quando premi “Find decision makers”.</p>
+
+    <div class="grid">
+      <div><label>Paese / regione</label><input id="region" value="Europe" /></div>
+      <div><label>Area terapeutica</label><input id="therapeuticArea" placeholder="Opzionale — es. Women's Health" /></div>
+      <div><label>Fatturato minimo (€)</label><input id="revenueMin" type="number" placeholder="Opzionale" /></div>
+      <div><label>Fatturato massimo (€)</label><input id="revenueMax" type="number" placeholder="Opzionale" /></div>
+
+      <div class="full">
+        <label>Settori</label>
+        <div class="checks">
+          <label class="check"><input class="segment" type="checkbox" value="Generics" checked> Generici</label>
+          <label class="check"><input class="segment" type="checkbox" value="Medical Devices" checked> Dispositivi medici</label>
+          <label class="check"><input class="segment" type="checkbox" value="Food Supplements" checked> Integratori</label>
+          <label class="check"><input class="segment" type="checkbox" value="OTC" checked> OTC</label>
+          <label class="check"><input class="segment" type="checkbox" value="Rx" checked> Rx</label>
+        </div>
+      </div>
+
+      <div><label>Similarity mode</label>
+        <select id="mode">
+          <option value="broad" selected>Broad — business model first</option>
+          <option value="strict">Strict — closest overall match</option>
+          <option value="portfolio">Portfolio-first</option>
+          <option value="size">Size-first</option>
+        </select>
+      </div>
+      <div><label>Numero risultati</label>
+        <select id="limit"><option>10</option><option selected>20</option><option>30</option><option>50</option></select>
+      </div>
+
+      <div class="full"><label>Escludi</label>
+        <textarea id="exclude">Puri grossisti senza portfolio proprio, farmacie, ospedali, CRO, API-only traders, aziende senza attività commerciale rilevante.</textarea>
+      </div>
+    </div>
+
+    <div class="actions"><button id="searchBtn" onclick="runSearch()">Find similar companies</button></div>
+    <div id="status" class="statusbar"></div>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script>
+const saved = JSON.parse(localStorage.getItem("apeiron_saved_leads") || "{}");
+
+function esc(s){return String(s ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+function selectedSegments(){return [...document.querySelectorAll(".segment:checked")].map(x=>x.value);}
+function showStatus(msg, isError=false){const e=document.getElementById("status"); e.style.display="block"; e.className="statusbar"+(isError?" error":""); e.textContent=msg;}
+function hideStatus(){document.getElementById("status").style.display="none";}
+
+async function runSearch(){
+  const btn=document.getElementById("searchBtn");
+  btn.disabled=true; showStatus("Ricerca e analisi in corso. Per 20–50 aziende può richiedere un po' di tempo…");
+  document.getElementById("results").innerHTML="";
+  try{
+    const payload={
+      region:document.getElementById("region").value,
+      therapeuticArea:document.getElementById("therapeuticArea").value,
+      revenueMin:document.getElementById("revenueMin").value || null,
+      revenueMax:document.getElementById("revenueMax").value || null,
+      segments:selectedSegments(),
+      mode:document.getElementById("mode").value,
+      limit:Number(document.getElementById("limit").value),
+      exclude:document.getElementById("exclude").value
+    };
+    const r=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error || "Search failed");
+    hideStatus(); renderCompanies(data.companies || []);
+  }catch(e){showStatus(e.message,true)}
+  finally{btn.disabled=false}
+}
+
+function similarityClass(x){x=(x||"").toLowerCase(); return x.includes("high")?"high":x.includes("medium")?"medium":"low";}
+
+function renderCompanies(companies){
+  const root=document.getElementById("results");
+  if(!companies.length){root.innerHTML='<div class="card"><p>Nessun risultato verificabile trovato con questi filtri.</p></div>'; return;}
+  root.innerHTML=`<div class="card"><h2>${companies.length} companies found</h2><p class="small">Controlla le fonti prima di contattare. Il sistema evita di inventare dati mancanti.</p></div>` +
+    companies.map((c,i)=>companyCard(c,i)).join("");
+}
+
+function companyCard(c,i){
+  const domain=c.domain || "";
+  const id=("c_"+domain+"_"+i).replace(/[^a-zA-Z0-9_-]/g,"_");
+  const pills=[c.similarity, ...(c.segments||[])].filter(Boolean).map((x,j)=>`<span class="pill ${j===0?similarityClass(x):""}">${esc(x)}</span>`).join("");
+  const sources=(c.sources||[]).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||s.url)}</a>`).join("") || '<div class="empty">No source URL returned</div>';
+  return `<div class="company" id="${id}">
+    <div class="company-head">
+      <div><div class="company-name">${esc(c.name)}</div><div class="meta">${esc(c.country)} · ${esc(c.company_type)} · ${esc(c.revenue_estimate)}</div><div class="pills">${pills}</div></div>
+      <button class="secondary ${saved[domain]?'saved':''}" onclick='saveLead(${JSON.stringify(JSON.stringify(c))}, this)'>${saved[domain]?"Saved":"Save lead"}</button>
+    </div>
+    <div class="company-body">
+      <div class="panel">
+        <h3>Why it matches</h3>
+        <div class="kv">
+          <div class="k">Similar to</div><div class="v">${esc((c.similar_to||[]).join(", "))}</div>
+          <div class="k">Website</div><div class="v">${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener">${esc(c.website)}</a>`:"Unknown"}</div>
+          <div class="k">Own brands</div><div class="v">${esc(c.own_brand_evidence)}</div>
+          <div class="k">Licensing / sourcing</div><div class="v">${esc(c.licensing_sourcing_evidence)}</div>
+          <div class="k">Therapeutic areas</div><div class="v">${esc((c.therapeutic_areas||[]).join(", ") || "Unknown")}</div>
+          <div class="k">Why relevant</div><div class="v">${esc(c.why_relevant)}</div>
+        </div>
+        <h3 style="margin-top:16px">Sources</h3><div class="sources">${sources}</div>
+      </div>
+      <div class="panel">
+        <h3>Decision makers</h3>
+        <div id="contacts_${i}" class="empty">Not searched yet.</div>
+        <div class="actions"><button class="secondary" onclick="findContacts('${esc(domain)}',${i})" ${domain?"":"disabled"}>Find decision makers</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function findContacts(domain,i){
+  const el=document.getElementById("contacts_"+i);
+  el.innerHTML="Searching business contacts…";
+  try{
+    const r=await fetch("/api/contacts?domain="+encodeURIComponent(domain));
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error || "Contact search failed");
+    const people=data.contacts||[];
+    const fallback=data.fallback||[];
+    let html=people.map(p=>`<div class="contact">
+      <div class="contact-name">${esc([p.first_name,p.last_name].filter(Boolean).join(" ") || p.email)}</div>
+      <div class="contact-role">${esc(p.position || "Role not specified")}</div>
+      <div><a href="mailto:${esc(p.email)}">${esc(p.email)}</a><span class="contact-status">Hunter confidence ${esc(p.confidence ?? "n/a")}</span></div>
+      <div class="small">${p.linkedin?`LinkedIn: <a href="${esc(p.linkedin)}" target="_blank" rel="noopener">profile</a> · `:""}${esc(p.source_note||"Professional email returned by provider")}</div>
+    </div>`).join("");
+    html += fallback.map(p=>`<div class="contact"><div class="contact-name">Fallback commercial contact</div><div class="contact-role">Generic business inbox</div><div><a href="mailto:${esc(p.email)}">${esc(p.email)}</a></div></div>`).join("");
+    el.innerHTML=html || '<div class="empty">No suitable email found. We do not guess addresses.</div>';
+  }catch(e){el.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+}
+
+function saveLead(jsonStr,btn){
+  const c=JSON.parse(jsonStr); const key=c.domain || c.name; saved[key]=c;
+  localStorage.setItem("apeiron_saved_leads",JSON.stringify(saved));
+  btn.textContent="Saved"; btn.classList.add("saved");
+}
+</script>
+</body>
+</html>
