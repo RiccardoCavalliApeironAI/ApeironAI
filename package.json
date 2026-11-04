@@ -1,9 +1,0 @@
-{
-  "name": "apeiron-ai-reference-first",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Apeiron AI reference-first pharma business-development discovery",
-  "engines": {
-    "node": "24.x"
-  }
-}
